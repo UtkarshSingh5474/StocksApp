@@ -1,12 +1,16 @@
+import { ImageBackground } from "react-native";
+
 export const lightTheme = {
     dark: false,
     colors: {
       primary: '#ffffff',
-      background: '#f0f0f0',
+      background: '#ffffff',
       card: '#ffffff',
       text: '#000000',
       border: '#E9E9EB',
       notification: '#ff453a',
+      imageBackground:"#D3D3D3",
+      themeColor:"#464646"
     },
   };
   
@@ -19,6 +23,8 @@ export const lightTheme = {
       text: '#ffffff',
       border: '#2E2E2E',
       notification: '#ff453a',
+      imageBackground:"",
+      themeColor:"#ffac33"
     },
   };
   

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
+import { useTheme } from '../theme/ThemeProvider';
+import NoImageSVG from '../assets/no-image.svg';
 
 interface CardItemProps {
   data: {
@@ -13,9 +15,10 @@ interface CardItemProps {
 
 const CardItem: React.FC<CardItemProps> = ({ data }) => {
   const { ticker, price, change_amount, change_percentage } = data;
+  const { theme } = useTheme();
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
-  const formatPercentage = (percentage: string) => parseFloat(percentage).toFixed(2);
+  const formatNumber = (percentage: string) => parseFloat(percentage).toFixed(2);
 
   useEffect(() => {
     fetchLogo();
@@ -27,23 +30,31 @@ const CardItem: React.FC<CardItemProps> = ({ data }) => {
       if (response.ok) {
         setLogoUrl(`https://financialmodelingprep.com/image-stock/${ticker}.png`);
       } else {
-        setLogoUrl(require('../assets/no-image.png'));
+        setLogoUrl(null); // Reset logoUrl to show default image
       }
     } catch (error) {
       console.error('Error fetching logo:', error);
-      setLogoUrl(require('../assets/no-image.png'));
+      setLogoUrl(null); // Reset logoUrl to show default image
     }
   };
 
   const isPositiveChange = parseFloat(change_percentage) > 0;
 
   return (
-    <View style={styles.card}>
-      {logoUrl && <Image source={typeof logoUrl === 'string' ? { uri: logoUrl } : logoUrl} style={styles.logo} />}
-      <Text style={styles.title}>{ticker}</Text>
-      <Text style={styles.subtitle}>${price}</Text>
-      <Text style={[styles.subtitle, { color: isPositiveChange ? 'green' : 'red' }]}>
-        ${change_amount} ({formatPercentage(change_percentage)}%)
+    <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+      {logoUrl ? (
+        <View style={[styles.logoContainer,{backgroundColor:theme.colors.imageBackground}]}>
+          <Image source={{ uri: logoUrl }} style={styles.logo} />
+        </View>
+      ) : (
+        <View style={[styles.defaultLogoContainer,{backgroundColor:theme.colors.imageBackground}]}>
+          <NoImageSVG style={styles.logo} />
+          </View>
+      )}
+      <Text style={[styles.title, { color: theme.colors.text }]}>{ticker}</Text>
+      <Text style={[styles.subtitle, { color: theme.colors.text }]}>${price}</Text>
+      <Text style={[styles.subtitle, { color: isPositiveChange ? '#0abb92' : '#d55438' }]}>
+        {isPositiveChange ? '+' : ''}${formatNumber(change_amount)} ({formatNumber(change_percentage)}%)
       </Text>
     </View>
   );
@@ -51,23 +62,38 @@ const CardItem: React.FC<CardItemProps> = ({ data }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 15,
     marginRight: 10,
     width: 160,
-    elevation: 3,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    shadowOffset: { width: 0, height: 2 },
+    borderWidth: 2,
+    flexDirection: 'column', // Ensures vertical alignment
+  },
+  logoContainer: {
+    backgroundColor: 'transparent', // Ensure background color is set to avoid overlapping with the image
+    borderRadius: 30,
+    width: 60,
+    height: 60,
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logo: {
     width: 60,
     height: 60,
-    marginBottom: 10,
     borderRadius: 30,
+  },
+  defaultLogoContainer: {
+    borderRadius: 30,
+    width: 60,
+    height: 60,
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  defaultLogoText: {
+    fontSize: 16,
   },
   title: {
     fontSize: 20,
