@@ -31,6 +31,8 @@ const SearchScreen = () => {
   const [selectedChip, setSelectedChip] = useState('All');
   const [recentlyVisitedStocks, setRecentlyVisitedStocks] = useState<any[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [originalSearchData, setOriginalSearchData] = useState<any[]>([]);
+  const [filteredList, setFilteredList] = useState<any[]>([]);
   const [query, setQuery] = useState('');
   const { theme, toggleTheme } = useTheme();
 
@@ -44,9 +46,14 @@ const SearchScreen = () => {
           const stocks = JSON.parse(stocksString);
           console.log('Recently visited stocks:', stocks);
           setRecentlyVisitedStocks(stocks.slice(0, 5));
-          if (query === '') {
-            setSearchResults(stocks.slice(0, 5));
-          }
+          setOriginalSearchData(stocks.slice(0, 5));
+          setFilteredList(stocks.slice(0, 5)); // Initialize filtered list with recently visited stocks
+          setSearchResults(stocks.slice(0, 5)); // Initialize search results with recently visited stocks
+        } else {
+          setRecentlyVisitedStocks([]);
+          setOriginalSearchData([]);
+          setFilteredList([]);
+          setSearchResults([]);
         }
       } catch (error) {
         console.error('Error fetching recently visited stocks:', error);
@@ -54,7 +61,39 @@ const SearchScreen = () => {
     };
 
     fetchRecentlyVisitedStocks();
-  }, [query]); // Only depend on query if necessary
+  }, []); // Fetch once during component mount
+
+  useEffect(() => {
+    // Update filteredList when originalSearchData or selectedChip changes
+    const filterData = () => {
+      let filteredData = [...originalSearchData];
+      switch (selectedChip) {
+        case 'All':
+          // No filtering needed for 'All' chip
+          break;
+        case 'Stocks':
+          filteredData = filteredData.filter(
+            (item) => item.assetType === 'Equity'
+          );
+          break;
+        case 'ETFs':
+          filteredData = filteredData.filter(
+            (item) => item.assetType === 'ETF'
+          );
+          break;
+        case 'Mutual Funds':
+          filteredData = filteredData.filter(
+            (item) => item.assetType === 'Mutual Fund'
+          );
+          break;
+        default:
+          break;
+      }
+      setFilteredList(filteredData);
+    };
+
+    filterData();
+  }, [originalSearchData, selectedChip]);
 
   const handleChipPress = (chip: string) => {
     setSelectedChip(chip);
@@ -70,7 +109,9 @@ const SearchScreen = () => {
       setQuery(keyword);
       if (keyword === '') {
         console.log('Search query is empty. Displaying recently visited stocks.');
+        setFilteredList(recentlyVisitedStocks);
         setSearchResults(recentlyVisitedStocks);
+        setOriginalSearchData(recentlyVisitedStocks);
         return;
       }
       try {
@@ -82,16 +123,21 @@ const SearchScreen = () => {
             assetType: match['3. type'],
           }));
           setSearchResults(results);
+          setOriginalSearchData(results);
+          setFilteredList(results);
         } else {
-          
+          // Handle no results scenario
+          setSearchResults([]);
+          setOriginalSearchData([]);
+          setFilteredList([]);
         }
       } catch (error) {
+        // Handle error scenario
+        console.error('Error searching:', error);
       }
     },
     [recentlyVisitedStocks]
   );
-  
-  
 
   const debouncedHandleSearch = useCallback(debounce(handleSearch, 300), []);
 
@@ -119,7 +165,7 @@ const SearchScreen = () => {
             style={[styles.chip, selectedChip === 'All' && styles.chipSelected]}
             onPress={() => handleChipPress('All')}
             activeOpacity={0.7}>
-            <Text style={[styles.chipText, selectedChip === 'All' && styles.chipTextSelected,{color:theme.colors.text}]}>
+            <Text style={[styles.chipText, selectedChip === 'All' && styles.chipTextSelected, { color: theme.colors.text }]}>
               All
             </Text>
           </TouchableOpacity>
@@ -127,7 +173,7 @@ const SearchScreen = () => {
             style={[styles.chip, selectedChip === 'Stocks' && styles.chipSelected]}
             onPress={() => handleChipPress('Stocks')}
             activeOpacity={0.7}>
-            <Text style={[styles.chipText, selectedChip === 'Stocks' && styles.chipTextSelected,{color:theme.colors.text}]}>
+            <Text style={[styles.chipText, selectedChip === 'Stocks' && styles.chipTextSelected, { color: theme.colors.text }]}>
               Stocks
             </Text>
           </TouchableOpacity>
@@ -135,23 +181,37 @@ const SearchScreen = () => {
             style={[styles.chip, selectedChip === 'ETFs' && styles.chipSelected]}
             onPress={() => handleChipPress('ETFs')}
             activeOpacity={0.7}>
-            <Text style={[styles.chipText, selectedChip === 'ETFs' && styles.chipTextSelected,{color:theme.colors.text}]}>
+            <Text style={[styles.chipText, selectedChip === 'ETFs' && styles.chipTextSelected, { color: theme.colors.text }]}>
               ETFs
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.chip, selectedChip === 'Mutual Funds' && styles.chipSelected]}
+            onPress={() => handleChipPress('Mutual Funds')}
+            activeOpacity={0.7}>
+            <Text style={[styles.chipText, selectedChip === 'Mutual Funds' && styles.chipTextSelected, { color: theme.colors.text }]}>
+              Mutual Funds
             </Text>
           </TouchableOpacity>
         </View>
       </View>
+      {filteredList.length === 0 && (
+        <View style={styles.noResultsContainer}>
+          <Text style={[styles.noResultsText, { color: theme.colors.text }]}>
+            No Matching Results
+          </Text>
+        </View>
+      )}
       <FlatList
-  data={query === '' ? recentlyVisitedStocks : searchResults}
-  keyExtractor={(item) => item.symbol}
-  renderItem={({ item }) => (
-    <SearchItem
-      item={item}
-      isRecentlyVisited={recentlyVisitedStocks.some((stock) => stock.symbol === item.symbol)}
-    />
-  )}
-/>
-
+        data={filteredList}
+        keyExtractor={(item) => item.symbol}
+        renderItem={({ item }) => (
+          <SearchItem
+            item={item}
+            isRecentlyVisited={recentlyVisitedStocks.some((stock) => stock.symbol === item.symbol)}
+          />
+        )}
+      />
     </View>
   );
 };
@@ -203,6 +263,16 @@ const styles = StyleSheet.create({
   },
   chipTextSelected: {
     color: '#fff',
+  },
+  noResultsContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  noResultsText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 20,
   },
 });
 
