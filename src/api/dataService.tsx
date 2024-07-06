@@ -70,6 +70,7 @@ const fetchApiData = async (endpoint: string, params?: any) => {
     data,
     timestamp: Date.now(),
   };
+  if(data===null) return data;
   await AsyncStorage.setItem(cacheKey, JSON.stringify(cacheData));
 
   return data;

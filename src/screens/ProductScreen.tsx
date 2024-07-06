@@ -18,7 +18,7 @@ const STORAGE_KEY_RECENT_STOCKS = '@recentlyVisitedStocks';
 const MAX_RECENT_STOCKS = 5; // Maximum number of recently visited stocks to store
 
 const ProductScreen: React.FC<Props> = ({route}) => {
-  const {symbol, current_price, change_amount, change_percentage} =
+  const {symbol} =
     route.params;
   const {theme} = useTheme();
   const [companyInfo, setCompanyInfo] = useState<any>(null);
@@ -41,34 +41,35 @@ const ProductScreen: React.FC<Props> = ({route}) => {
     name: string,
     assetType: string,
   ) => {
+    // Check if all three items are present
+    if (!symbol || !name || !assetType) {
+      return;
+    }
+  
     try {
-      let recentlyVisitedStocks = await AsyncStorage.getItem(
-        STORAGE_KEY_RECENT_STOCKS,
-      );
-      let stocks: {symbol: string; name: string; assetType: string}[] = [];
-
-      if(assetType==="Common Stock")assetType="Equity";
-
+      let recentlyVisitedStocks = await AsyncStorage.getItem(STORAGE_KEY_RECENT_STOCKS);
+      let stocks: { symbol: string; name: string; assetType: string }[] = [];
+  
+      if (assetType === "Common Stock") assetType = "Equity";
+  
       if (recentlyVisitedStocks) {
         stocks = JSON.parse(recentlyVisitedStocks);
       }
-
+  
       stocks = stocks.filter(item => item.symbol !== symbol);
-
-      stocks.unshift({symbol, name, assetType});
-
+  
+      stocks.unshift({ symbol, name, assetType });
+  
       if (stocks.length > MAX_RECENT_STOCKS) {
         stocks = stocks.slice(0, MAX_RECENT_STOCKS);
       }
-
-      await AsyncStorage.setItem(
-        STORAGE_KEY_RECENT_STOCKS,
-        JSON.stringify(stocks),
-      );
+  
+      await AsyncStorage.setItem(STORAGE_KEY_RECENT_STOCKS, JSON.stringify(stocks));
     } catch (error) {
       console.error('Error saving to AsyncStorage:', error);
     }
   };
+  
 
   if (!companyInfo) {
     return null;
@@ -91,8 +92,6 @@ const ProductScreen: React.FC<Props> = ({route}) => {
     Sector,
   } = companyInfo;
 
-  const currentPrice = current_price;
-  const priceChange = parseFloat(change_amount);
 
   return (
     <ScrollView

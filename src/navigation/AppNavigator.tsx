@@ -4,11 +4,14 @@ import { createStackNavigator } from '@react-navigation/stack';
 import ExploreScreen from '../screens/ExploreScreen';
 import ProductScreen from '../screens/ProductScreen';
 import SearchScreen from '../screens/SearchScreen';
+import ChangeApiKeyScreen from '../screens/ChangeApiScreen';
+import ChangeApiScreen from '../screens/ChangeApiScreen';
 
 export type RootStackParamList = {
   Explore: undefined;
-  Product: { symbol: string ,current_price:string,change_amount:string,change_percentage:string};
+  Product: { symbol: string};
   Search: undefined;
+  ChangeApiKey: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -30,6 +33,10 @@ const AppNavigator = () => {
           name="Search"
           component={SearchScreen}
           options={{ headerShown: false }}  />
+
+          <Stack.Screen
+          name="ChangeApiKey"
+          component={ChangeApiScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -5,6 +5,7 @@ import RecentlyVisitedIcon from '../assets/history.svg';
 import TrendUpIcon from '../assets/trend-up.svg'; 
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import {useNavigation} from '@react-navigation/native';
+import apiConstants from '../constants/API';
 
 
 interface Props {
@@ -16,8 +17,14 @@ const SearchItem: React.FC<Props> = ({ item, isRecentlyVisited = false }) => {
   const { theme } = useTheme();
   const navigation = useNavigation<any>();
 
-  const handleSearchItemPress = () => {
-    navigation.navigate('Product', { symbol: "IBM" });
+  const handleSearchItemPress = async () => {
+    const currentApiKey = await apiConstants.getApiKey();
+  
+    if (currentApiKey === 'demo' || currentApiKey === null) {
+      navigation.navigate('Product', { symbol: 'IBM' });
+    } else {
+      navigation.navigate('Product', { symbol: item.symbol });
+    }
   };
 
   return (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import { useTheme } from '../theme/ThemeProvider';
 import NoImageSVG from '../assets/no-image.svg';
 
@@ -43,13 +44,20 @@ const CardItem: React.FC<CardItemProps> = ({ data }) => {
   return (
     <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
       {logoUrl ? (
-        <View style={[styles.logoContainer,{backgroundColor:theme.colors.imageBackground}]}>
-          <Image source={{ uri: logoUrl }} style={styles.logo} />
+        <View style={[styles.logoContainer, { backgroundColor: theme.colors.imageBackground }]}>
+          <FastImage
+            style={styles.logo}
+            source={{
+              uri: logoUrl,
+              priority: FastImage.priority.normal,
+            }}
+            resizeMode={FastImage.resizeMode.cover}
+          />
         </View>
       ) : (
-        <View style={[styles.defaultLogoContainer,{backgroundColor:theme.colors.imageBackground}]}>
+        <View style={[styles.defaultLogoContainer, { backgroundColor: theme.colors.imageBackground }]}>
           <NoImageSVG style={styles.logo} />
-          </View>
+        </View>
       )}
       <Text style={[styles.title, { color: theme.colors.text }]}>{ticker}</Text>
       <Text style={[styles.subtitle, { color: theme.colors.text }]}>${price}</Text>

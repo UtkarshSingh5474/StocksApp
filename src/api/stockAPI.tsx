@@ -1,20 +1,29 @@
 import Config from "react-native-config";
-import { Alert } from 'react-native'; 
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert } from 'react-native';
+import apiConstants from '../constants/API';
 
 const BASE_URL = 'https://www.alphavantage.co';
-const API_KEY = "demo"; 
 
-const endpoints = {
-  topGainersLosers: `${BASE_URL}/query?function=TOP_GAINERS_LOSERS&apikey=${API_KEY}`,
-  companyOverview: (symbol: string) => `${BASE_URL}/query?function=OVERVIEW&symbol=${symbol}&apikey=${API_KEY}`,
-  tickerSearch: (keywords: string) => `${BASE_URL}/query?function=SYMBOL_SEARCH&keywords=${keywords}&apikey=${API_KEY}`,
-  dailyTimeSeries: (symbol: string) => `${BASE_URL}/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&apikey=${API_KEY}`,
-  monthlyTimeSeries: (symbol: string) => `${BASE_URL}/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=${symbol}&apikey=${API_KEY}`,
-  intradayTimeSeries: (symbol: string, interval: string = '5min') => `${BASE_URL}/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=${interval}&apikey=${API_KEY}`,
+const getApiKey = async () => {
+  const apiKey = await AsyncStorage.getItem('apiKey');
+  if (!apiKey) {
+    apiConstants.setApiKey("demo");
+  }
+  console.log('apiKey:', apiKey);
+  return apiKey ? apiKey : "demo"; // Use the environment variable if no key is stored
 };
 
-const handleRateLimitReached = (data:any) => {
+const endpoints = {
+  topGainersLosers: async () => `${BASE_URL}/query?function=TOP_GAINERS_LOSERS&apikey=${await getApiKey()}`,
+  companyOverview: async (symbol: string) => `${BASE_URL}/query?function=OVERVIEW&symbol=${symbol}&apikey=${await getApiKey()}`,
+  tickerSearch: async (keywords: string) => `${BASE_URL}/query?function=SYMBOL_SEARCH&keywords=${keywords}&apikey=${await getApiKey()}`,
+  dailyTimeSeries: async (symbol: string) => `${BASE_URL}/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&apikey=${await getApiKey()}`,
+  monthlyTimeSeries: async (symbol: string) => `${BASE_URL}/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=${symbol}&apikey=${await getApiKey()}`,
+  intradayTimeSeries: async (symbol: string, interval: string = '5min') => `${BASE_URL}/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=${interval}&apikey=${await getApiKey()}`,
+};
+
+const handleRateLimitReached = (data: any) => {
   if (data.Information && data.Information.includes("API rate limit")) {
     Alert.alert(
       'API Limit Reached',
@@ -29,7 +38,7 @@ const handleRateLimitReached = (data:any) => {
 // Fetch function with rate limit handling
 const fetchTopGainersLosers = async () => {
   try {
-    const response = await fetch(endpoints.topGainersLosers);
+    const response = await fetch(await endpoints.topGainersLosers());
     const data = await response.json();
 
     if (handleRateLimitReached(data)) {
@@ -45,7 +54,7 @@ const fetchTopGainersLosers = async () => {
 
 const fetchCompanyOverview = async (symbol: string) => {
   try {
-    const response = await fetch(endpoints.companyOverview(symbol));
+    const response = await fetch(await endpoints.companyOverview(symbol));
     const data = await response.json();
 
     if (handleRateLimitReached(data)) {
@@ -61,7 +70,7 @@ const fetchCompanyOverview = async (symbol: string) => {
 
 const fetchTickerSearch = async (keywords: string) => {
   try {
-    const response = await fetch(endpoints.tickerSearch(keywords));
+    const response = await fetch(await endpoints.tickerSearch(keywords));
     const data = await response.json();
 
     if (handleRateLimitReached(data)) {
@@ -77,7 +86,7 @@ const fetchTickerSearch = async (keywords: string) => {
 
 const fetchDailyTimeSeries = async (symbol: string) => {
   try {
-    const response = await fetch(endpoints.dailyTimeSeries(symbol));
+    const response = await fetch(await endpoints.dailyTimeSeries(symbol));
     const data = await response.json();
 
     if (handleRateLimitReached(data)) {
@@ -93,7 +102,7 @@ const fetchDailyTimeSeries = async (symbol: string) => {
 
 const fetchMonthlyTimeSeries = async (symbol: string) => {
   try {
-    const response = await fetch(endpoints.monthlyTimeSeries(symbol));
+    const response = await fetch(await endpoints.monthlyTimeSeries(symbol));
     const data = await response.json();
 
     if (handleRateLimitReached(data)) {
@@ -109,7 +118,7 @@ const fetchMonthlyTimeSeries = async (symbol: string) => {
 
 const fetchIntradayTimeSeries = async (symbol: string, interval: string = '5min') => {
   try {
-    const response = await fetch(endpoints.intradayTimeSeries(symbol, interval));
+    const response = await fetch(await endpoints.intradayTimeSeries(symbol, interval));
     const data = await response.json();
 
     if (handleRateLimitReached(data)) {

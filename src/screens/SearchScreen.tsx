@@ -30,11 +30,10 @@ const SearchScreen = () => {
   const navigation = useNavigation<any>();
   const [selectedChip, setSelectedChip] = useState('All');
   const [recentlyVisitedStocks, setRecentlyVisitedStocks] = useState<any[]>([]);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [originalSearchData, setOriginalSearchData] = useState<any[]>([]);
   const [filteredList, setFilteredList] = useState<any[]>([]);
   const [query, setQuery] = useState('');
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const fetchRecentlyVisitedStocks = async () => {
@@ -48,12 +47,10 @@ const SearchScreen = () => {
           setRecentlyVisitedStocks(stocks.slice(0, 5));
           setOriginalSearchData(stocks.slice(0, 5));
           setFilteredList(stocks.slice(0, 5)); // Initialize filtered list with recently visited stocks
-          setSearchResults(stocks.slice(0, 5)); // Initialize search results with recently visited stocks
         } else {
           setRecentlyVisitedStocks([]);
           setOriginalSearchData([]);
           setFilteredList([]);
-          setSearchResults([]);
         }
       } catch (error) {
         console.error('Error fetching recently visited stocks:', error);
@@ -109,9 +106,8 @@ const SearchScreen = () => {
       setQuery(keyword);
       if (keyword === '') {
         console.log('Search query is empty. Displaying recently visited stocks.');
-        setFilteredList(recentlyVisitedStocks);
-        setSearchResults(recentlyVisitedStocks);
-        setOriginalSearchData(recentlyVisitedStocks);
+        // setFilteredList(recentlyVisitedStocks);
+        // setOriginalSearchData(recentlyVisitedStocks);
         return;
       }
       try {
@@ -122,12 +118,10 @@ const SearchScreen = () => {
             name: match['2. name'],
             assetType: match['3. type'],
           }));
-          setSearchResults(results);
           setOriginalSearchData(results);
           setFilteredList(results);
         } else {
           // Handle no results scenario
-          setSearchResults([]);
           setOriginalSearchData([]);
           setFilteredList([]);
         }

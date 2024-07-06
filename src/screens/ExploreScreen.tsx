@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,16 +6,18 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Image,
+  Modal,
+  Alert,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import CardItem from '../components/CardItem';
-import {useTheme} from '../theme/ThemeProvider';
+import { useTheme } from '../theme/ThemeProvider';
 import SearchIcon from '../assets/search.svg';
 import AppLogo from '../assets/appLogo.svg';
 import SunSVG from '../assets/sun.svg';
 import MenuSVG from '../assets/menu.svg';
 import { clearCache, fetchWithCache } from '../api/dataService';
+import apiConstants from '../constants/API';
 
 interface StockItem {
   ticker: string;
@@ -31,16 +33,19 @@ const ExploreScreen = () => {
   const [topLosers, setTopLosers] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'gainers' | 'losers'>('gainers');
-  const {theme, toggleTheme} = useTheme();
+  const { theme, toggleTheme } = useTheme();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const {top_gainers, top_losers} = await fetchWithCache("topGainersLosers");
+        const { top_gainers, top_losers } = await fetchWithCache("topGainersLosers");
         setTopGainers(top_gainers);
         setTopLosers(top_losers);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -49,18 +54,14 @@ const ExploreScreen = () => {
     fetchData();
   }, []);
 
-  const handleCardPress = (
-    ticker: string,
-    current_price: string,
-    change_amount: string,
-    change_percentage: string,
-  ) => {
-    navigation.navigate('Product', {
-      symbol: 'IBM',
-      current_price,
-      change_amount,
-      change_percentage,
-    });
+  const handleCardPress = async (ticker: string) => {
+    const currentApiKey = await apiConstants.getApiKey();
+    console.log('currentApiKey:', currentApiKey);
+    if (currentApiKey === 'demo' || currentApiKey === null) {
+      navigation.navigate('Product', { symbol: 'IBM' });
+    } else {
+      navigation.navigate('Product', { symbol: ticker });
+    }
   };
 
   const handleSearchIconPress = async () => {
@@ -68,37 +69,70 @@ const ExploreScreen = () => {
   };
 
   const handleCacheClearPress = async () => {
-    clearCache();
+    Alert.alert(
+      'Clear Cache',
+      'Are you sure you want to clear the API cache?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: () => {
+            clearCache();
+          },
+        },
+      ],
+      { cancelable: false }
+    );
   }
+
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+  };
+
+  const handleModalOptionPress = (option: string) => {
+    if (option === 'API KEY') {
+      toggleModal();
+      navigation.navigate('ChangeApiKey');
+    } else if (option === 'Clear API Cache') {
+      toggleModal();
+      handleCacheClearPress();
+    }
+  };
 
   if (loading) {
     return (
-      <View
-        style={[
-          styles.loadingContainer,
-          {backgroundColor: theme.colors.background},
-        ]}>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
         <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   }
 
+  const noDataMessage = (
+    <View style={styles.noDataContainer}>
+      <Text style={[styles.noDataText, { color: theme.colors.text }]}>
+        No data available. Try changing the API key from the menu.
+      </Text>
+    </View>
+  );
+
   return (
-    <View
-      style={[styles.container, {backgroundColor: theme.colors.background}]}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         {/* App Logo and Name */}
         <View style={styles.appLogoContainer}>
           <AppLogo style={styles.appLogo} />
-          <Text style={[styles.appName, {color: theme.colors.text}]}>
+          <Text style={[styles.appName, { color: theme.colors.text }]}>
             Stocks App
           </Text>
         </View>
 
         <View style={styles.iconsContainer}>
           <TouchableOpacity
-            style={styles.searchButton}
+            style={styles.themeToggleButton}
             onPress={handleSearchIconPress}>
             <SearchIcon width={30} height={30} fill={theme.colors.text} />
           </TouchableOpacity>
@@ -111,99 +145,96 @@ const ExploreScreen = () => {
 
           <TouchableOpacity
             style={styles.themeToggleButton}
-            onPress={handleCacheClearPress}>
-            <Text>Clear</Text>
+            onPress={toggleModal}>
+            <MenuSVG width={30} height={30} fill={theme.colors.text} />
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Content */}
-      {activeTab === 'gainers' ? (
+      {error || (activeTab === 'gainers' ? topGainers.length === 0 : topLosers.length === 0) ? (
+        noDataMessage
+      ) : activeTab === 'gainers' ? (
         <FlatList
           data={topGainers}
-          renderItem={({item}) => (
-            <TouchableOpacity
-              onPress={() =>
-                handleCardPress(
-                  item.ticker,
-                  item.price,
-                  item.change_amount,
-                  item.change_percentage,
-                )
-              }>
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => handleCardPress(item.ticker)}>
               <CardItem data={item} />
             </TouchableOpacity>
           )}
-          keyExtractor={item => item.ticker}
+          keyExtractor={(item) => item.ticker}
           numColumns={2}
           columnWrapperStyle={styles.columnWrapper}
           contentContainerStyle={styles.grid}
-          ItemSeparatorComponent={() => <View style={{height: 10}} />}
+          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         />
       ) : (
         <FlatList
           data={topLosers}
-          renderItem={({item}) => (
-            <TouchableOpacity
-              onPress={() =>
-                handleCardPress(
-                  item.ticker,
-                  item.price,
-                  item.change_amount,
-                  item.change_percentage,
-                )
-              }>
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => handleCardPress(item.ticker)}>
               <CardItem data={item} />
             </TouchableOpacity>
           )}
-          keyExtractor={item => item.ticker}
+          keyExtractor={(item) => item.ticker}
           numColumns={2}
           columnWrapperStyle={styles.columnWrapper}
           contentContainerStyle={styles.grid}
-          ItemSeparatorComponent={() => <View style={{height: 10}} />}
+          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
         />
       )}
 
       {/* Tab Buttons */}
-      <View
-        style={[
-          styles.tabsContainer,
-          styles.shadow,
-          {backgroundColor: theme.colors.background},
-        ]}>
+      <View style={[styles.tabsContainer, styles.shadow, { backgroundColor: theme.colors.background }]}>
         <TouchableOpacity
-          style={[
-            styles.tabButton,
-            activeTab === 'gainers' && styles.activeTabButton,
-            {backgroundColor: theme.colors.background},
-          ]}
+          style={[styles.tabButton, activeTab === 'gainers' && styles.activeTabButton, { backgroundColor: theme.colors.background }]}
           onPress={() => setActiveTab('gainers')}>
-          <Text style={[styles.tabButtonText, {color: theme.colors.text}]}>
+          <Text style={[styles.tabButtonText, { color: theme.colors.text }]}>
             Top Gainers
           </Text>
           {activeTab === 'gainers' && (
-            <View style={[styles.underline, {backgroundColor: '#0abb92'}]} />
+            <View style={[styles.underline, { backgroundColor: '#0abb92' }]} />
           )}
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.tabButton,
-            activeTab === 'losers' && styles.activeTabButton,
-            {backgroundColor: theme.colors.background},
-          ]}
+          style={[styles.tabButton, activeTab === 'losers' && styles.activeTabButton, { backgroundColor: theme.colors.background }]}
           onPress={() => setActiveTab('losers')}>
-          <Text style={[styles.tabButtonText, {color: theme.colors.text}]}>
+          <Text style={[styles.tabButtonText, { color: theme.colors.text }]}>
             Top Losers
           </Text>
           {activeTab === 'losers' && (
-            <View style={[styles.underline, {backgroundColor: '#d55438'}]} />
+            <View style={[styles.underline, { backgroundColor: '#d55438' }]} />
           )}
         </TouchableOpacity>
       </View>
+
+      {/* Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={toggleModal}>
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            style={styles.modalOption}
+            onPress={() => handleModalOptionPress('Clear API Cache')}>
+            <Text style={styles.modalOptionText}>Clear API Cache</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.modalOption}
+            onPress={() => handleModalOptionPress('API KEY')}>
+            <Text style={styles.modalOptionText}>API KEY</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.modalOption}
+            onPress={toggleModal}>
+            <Text style={styles.modalOptionText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -266,7 +297,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: 100,
   },
   underline: {
     marginTop: 8,
@@ -289,6 +319,41 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    margin: 50,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalOption: {
+    paddingVertical: 15,
+    width: '100%',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  modalOptionText: {
+    fontSize: 18,
+  },noDataContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noDataText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 
