@@ -6,7 +6,9 @@ import StockChart from '../components/StockChart';
 import {useTheme} from '../theme/ThemeProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {fetchWithCache} from '../api/dataService';
-import colors from '../constants/Colors';
+import {TouchableOpacity} from 'react-native-gesture-handler';
+import BackArrow from '../assets/back-arrow.svg';
+import {useNavigation} from '@react-navigation/native';
 
 type ProductScreenRouteProp = RouteProp<RootStackParamList, 'Product'>;
 
@@ -18,8 +20,8 @@ const STORAGE_KEY_RECENT_STOCKS = '@recentlyVisitedStocks';
 const MAX_RECENT_STOCKS = 5; // Maximum number of recently visited stocks to store
 
 const ProductScreen: React.FC<Props> = ({route}) => {
-  const {symbol} =
-    route.params;
+  const navigation = useNavigation();
+  const {symbol} = route.params;
   const {theme} = useTheme();
   const [companyInfo, setCompanyInfo] = useState<any>(null);
 
@@ -29,7 +31,7 @@ const ProductScreen: React.FC<Props> = ({route}) => {
 
   const fetchCompanyData = async (symbol: string) => {
     const data = await fetchWithCache('companyOverview', {symbol: symbol});
-    if(data.AssetType==="Common Stock")data.AssetType="Equity";
+    if (data.AssetType === 'Common Stock') data.AssetType = 'Equity';
     setCompanyInfo(data);
   };
 
@@ -45,31 +47,35 @@ const ProductScreen: React.FC<Props> = ({route}) => {
     if (!symbol || !name || !assetType) {
       return;
     }
-  
+
     try {
-      let recentlyVisitedStocks = await AsyncStorage.getItem(STORAGE_KEY_RECENT_STOCKS);
-      let stocks: { symbol: string; name: string; assetType: string }[] = [];
-  
-      if (assetType === "Common Stock") assetType = "Equity";
-  
+      let recentlyVisitedStocks = await AsyncStorage.getItem(
+        STORAGE_KEY_RECENT_STOCKS,
+      );
+      let stocks: {symbol: string; name: string; assetType: string}[] = [];
+
+      if (assetType === 'Common Stock') assetType = 'Equity';
+
       if (recentlyVisitedStocks) {
         stocks = JSON.parse(recentlyVisitedStocks);
       }
-  
+
       stocks = stocks.filter(item => item.symbol !== symbol);
-  
-      stocks.unshift({ symbol, name, assetType });
-  
+
+      stocks.unshift({symbol, name, assetType});
+
       if (stocks.length > MAX_RECENT_STOCKS) {
         stocks = stocks.slice(0, MAX_RECENT_STOCKS);
       }
-  
-      await AsyncStorage.setItem(STORAGE_KEY_RECENT_STOCKS, JSON.stringify(stocks));
+
+      await AsyncStorage.setItem(
+        STORAGE_KEY_RECENT_STOCKS,
+        JSON.stringify(stocks),
+      );
     } catch (error) {
       console.error('Error saving to AsyncStorage:', error);
     }
   };
-  
 
   if (!companyInfo) {
     return null;
@@ -92,6 +98,9 @@ const ProductScreen: React.FC<Props> = ({route}) => {
     Sector,
   } = companyInfo;
 
+  const handleBackPress = () => {
+    navigation.goBack();
+  };
 
   return (
     <ScrollView
@@ -99,6 +108,9 @@ const ProductScreen: React.FC<Props> = ({route}) => {
         styles.container,
         {backgroundColor: theme.colors.background},
       ]}>
+      <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+        <BackArrow width={30} height={30} fill={theme.colors.text} />
+      </TouchableOpacity>
       {/* Logo and Chips */}
       <View style={styles.logoContainer}>
         <View
@@ -189,6 +201,9 @@ const ProductScreen: React.FC<Props> = ({route}) => {
 };
 
 const styles = StyleSheet.create({
+  backButton: {
+    marginRight: 10,
+  },
   container: {
     flexGrow: 1,
     padding: 20,
@@ -228,7 +243,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     maxWidth: '70%', // Adjust as needed
   },
-  
+
   chip: {
     backgroundColor: 'rgba(10, 189, 147, 0.45)',
     borderRadius: 20,

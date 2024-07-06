@@ -19,8 +19,6 @@ const CardItem: React.FC<CardItemProps> = ({ data }) => {
   const { theme } = useTheme();
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
-  const formatNumber = (percentage: string) => parseFloat(percentage).toFixed(2);
-
   useEffect(() => {
     fetchLogo();
   }, []);
@@ -44,25 +42,20 @@ const CardItem: React.FC<CardItemProps> = ({ data }) => {
   return (
     <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
       {logoUrl ? (
-        <View style={[styles.logoContainer, { backgroundColor: theme.colors.imageBackground }]}>
-          <FastImage
-            style={styles.logo}
-            source={{
-              uri: logoUrl,
-              priority: FastImage.priority.normal,
-            }}
-            resizeMode={FastImage.resizeMode.cover}
-          />
-        </View>
+        <FastImage
+          style={styles.logo}
+          source={{ uri: logoUrl, priority: FastImage.priority.normal }}
+          resizeMode={FastImage.resizeMode.cover}
+        />
       ) : (
         <View style={[styles.defaultLogoContainer, { backgroundColor: theme.colors.imageBackground }]}>
-          <NoImageSVG style={styles.logo} />
+          <NoImageSVG style={styles.defaultLogo} fill={theme.colors.text} />
         </View>
       )}
       <Text style={[styles.title, { color: theme.colors.text }]}>{ticker}</Text>
       <Text style={[styles.subtitle, { color: theme.colors.text }]}>${price}</Text>
       <Text style={[styles.subtitle, { color: isPositiveChange ? '#0abb92' : '#d55438' }]}>
-        {isPositiveChange ? '+' : ''}${formatNumber(change_amount)} ({formatNumber(change_percentage)}%)
+        {isPositiveChange ? '+' : ''}${parseFloat(change_amount).toFixed(2)} ({parseFloat(change_percentage).toFixed(2)}%)
       </Text>
     </View>
   );
@@ -71,47 +64,38 @@ const CardItem: React.FC<CardItemProps> = ({ data }) => {
 const styles = StyleSheet.create({
   card: {
     borderRadius: 8,
-    padding: 15,
-    marginRight: 10,
-    width: 160,
+    padding: 10,
+    width: 150,
     alignItems: 'center',
-    borderWidth: 2,
-    flexDirection: 'column', // Ensures vertical alignment
-  },
-  logoContainer: {
-    backgroundColor: 'transparent', // Ensure background color is set to avoid overlapping with the image
-    borderRadius: 30,
-    width: 60,
-    height: 60,
-    marginBottom: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderWidth: 1,
+    flexDirection: 'column',
   },
   logo: {
     width: 60,
     height: 60,
     borderRadius: 30,
+    marginBottom: 5,
   },
   defaultLogoContainer: {
     borderRadius: 30,
     width: 60,
     height: 60,
-    marginBottom: 10,
+    marginBottom: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  defaultLogoText: {
-    fontSize: 16,
+  defaultLogo: {
+    width: 40,
+    height: 40,
   },
   title: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 3,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    marginBottom: 5,
+    fontSize: 14,
     textAlign: 'center',
   },
 });

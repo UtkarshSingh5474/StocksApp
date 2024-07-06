@@ -222,7 +222,7 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
                   </Text>
 
                   <View style={{ paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: 'white' }}>
-                    <Text style={{ fontWeight: 'bold', textAlign: 'center' }}>
+                    <Text style={{ fontWeight: 'bold', textAlign: 'center' ,color:'black'}}>
                       {'$' + items[0].value + '.0'}
                     </Text>
                   </View>

@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Modal,
   Alert,
+  Dimensions, // Import Dimensions
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import CardItem from '../components/CardItem';
@@ -235,6 +236,7 @@ const ExploreScreen = () => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -265,47 +267,55 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     color: '#333', // Adjust color as needed
   },
-  searchButton: {
-    padding: 10,
-  },
   themeToggleButton: {
     padding: 10,
-  },
-  tabsContainer: {
-    margin: 6,
-    borderWidth: 0.4,
-    borderColor: 'gray',
-    flexDirection: 'row',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 10,
-    borderRadius: 20,
-  },
-  tabButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingTop: 16,
-  },
-  activeTabButton: {},
-  tabButtonText: {
-    fontSize: 16,
-    fontWeight: 'semibold',
   },
   iconsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  tabsContainer: {
+    marginHorizontal: 10,
+    marginVertical: 6,
+    borderWidth: 0.4,
+    borderColor: 'gray',
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 10, // Adjust position as needed
+    left: 10, // Adjust position as needed
+    right: 10, // Adjust position as needed
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    backgroundColor: 'white', // Adjust background color as needed
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: 8,
+  },
+  activeTabButton: {},
+  tabButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   underline: {
     marginTop: 8,
-    height: 6,
+    height: 4,
     width: '100%',
     borderRadius: 2,
   },
   grid: {
-    paddingBottom: 60, // Adjusted to account for the height of the tab buttons
+    paddingBottom: 80, // Adjusted to account for the height of the tab buttons
   },
   columnWrapper: {
     justifyContent: 'space-between',
@@ -345,7 +355,8 @@ const styles = StyleSheet.create({
   },
   modalOptionText: {
     fontSize: 18,
-  },noDataContainer: {
+  },
+  noDataContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',

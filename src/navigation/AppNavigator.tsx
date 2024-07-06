@@ -28,6 +28,7 @@ const AppNavigator = () => {
         <Stack.Screen 
           name="Product" 
           component={ProductScreen} 
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Search"
