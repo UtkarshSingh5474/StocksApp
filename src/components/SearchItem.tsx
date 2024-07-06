@@ -1,19 +1,38 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTheme } from '../theme/ThemeProvider';
+import RecentlyVisitedIcon from '../assets/history.svg';
+import TrendUpIcon from '../assets/trend-up.svg'; 
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import {useNavigation} from '@react-navigation/native';
 
-const SearchItem = ({ item }:any) => {
+
+interface Props {
+  item: any;
+  isRecentlyVisited?: boolean;
+}
+
+const SearchItem: React.FC<Props> = ({ item, isRecentlyVisited = false }) => {
+  const { theme } = useTheme();
+  const navigation = useNavigation<any>();
+
+  const handleSearchItemPress = () => {
+    navigation.navigate('Product', { symbol: "IBM" });
+  };
+
   return (
+    <TouchableOpacity onPress={handleSearchItemPress}>
     <View style={styles.itemContainer}>
-      {/* Rounded Icon (Assuming you have an icon component or image here) */}
-      <View style={styles.icon}></View>
-      {/* Ticker Symbol and Name */}
+      <View style={styles.icon}>
+        {isRecentlyVisited ? <RecentlyVisitedIcon width={20} height={20} /> : <TrendUpIcon width={20} height={20} />}
+      </View>
       <View style={styles.textContainer}>
-        <Text style={styles.tickerSymbol}>{item.tickerSymbol}</Text>
+        <Text style={[styles.tickerSymbol, { color: theme.colors.text }]}>{item.symbol}</Text>
         <Text style={styles.name}>{item.name}</Text>
       </View>
-      {/* Asset Type */}
       <Text style={styles.assetType}>{item.assetType}</Text>
     </View>
+    </TouchableOpacity>
   );
 };
 
@@ -30,8 +49,11 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#ccc', // Placeholder for icon background color
+    backgroundColor: '#ccc', 
     marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    
   },
   textContainer: {
     flex: 1,

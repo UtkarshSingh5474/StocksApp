@@ -1,20 +1,22 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
-import {
-  fetchDailyTimeSeries,
-  fetchMonthlyTimeSeries,
-  fetchIntradayTimeSeries,
-} from '../api/stockAPI';
+import { fetchWithCache } from '../api/dataService';
+import { useTheme } from '../theme/ThemeProvider';
 
 type StockChartProps = {
   symbol: string;
 };
 
 const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
-  const [chartData, setChartData] = useState<{ value: number, date: string }[]>([]);
+  const { theme } = useTheme();
+  const [chartData, setChartData] = useState<{ value: number; date: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedInterval, setSelectedInterval] = useState('1D');
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const [priceChange, setPriceChange] = useState<number | null>(null);
+  const [changePercentage, setChangePercentage] = useState<number | null>(null);
+  const [maxChartValue, setMaxChartValue] = useState<number>(200); // Initial max value, can be adjusted as needed
 
   useEffect(() => {
     fetchChartData(selectedInterval);
@@ -26,49 +28,67 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
       let data: any;
       switch (interval) {
         case '1D':
-          data = await fetchIntradayTimeSeries(symbol, '5min');
+          data = await fetchWithCache('intradayTimeSeries', {
+            symbol: symbol,
+            interval: '5min',
+          });
+          if (data && data['Time Series (5min)']) {
+            const intradaySeries = data['Time Series (5min)'];
+            const latestTimestamp = Object.keys(intradaySeries)[0];
+            setCurrentPrice(
+              parseFloat(intradaySeries[latestTimestamp]['4. close']),
+            );
+          }
           break;
         case '1W':
         case '1M':
-          data = await fetchDailyTimeSeries(symbol);
+          data = await fetchWithCache('dailyTimeSeries', { symbol: symbol });
           break;
         case '1Y':
-          data = await fetchMonthlyTimeSeries(symbol);
+          data = await fetchWithCache('monthlyTimeSeries', { symbol: symbol });
           break;
         default:
           return;
       }
-      if (data) {
-        let timeSeries = data['Time Series (5min)'] || data['Time Series (Daily)'] || data['Monthly Adjusted Time Series'];
 
-        if (interval === '1Y') {
-          // Filter and slice data for last 12 months
+      if (data) {
+        let timeSeries =
+          data['Time Series (5min)'] ||
+          data['Time Series (Daily)'] ||
+          data['Monthly Adjusted Time Series'];
+
+        // Derive current price for other intervals
+        if (interval !== '1D') {
           const dates = Object.keys(timeSeries);
-          const last12MonthsDates = dates.slice(0, 12);
-          timeSeries = last12MonthsDates.reduce((acc: any, date: string) => {
-            acc[date] = timeSeries[date];
-            return acc;
-          }, {});
-        } else if (interval === '1M') {
-          // Filter and slice data for last 30 days
-          const dates = Object.keys(timeSeries);
-          const last30DaysDates = dates.slice(0, 30);
-          timeSeries = last30DaysDates.reduce((acc: any, date: string) => {
-            acc[date] = timeSeries[date];
-            return acc;
-          }, {});
-        } else {
-          timeSeries = Object.keys(timeSeries).slice(0, 7).reverse().reduce((acc: any, date: string) => {
-            acc[date] = timeSeries[date];
-            return acc;
-          }, {});
+          const latestDate = dates[0];
+          setCurrentPrice(parseFloat(timeSeries[latestDate]['4. close']));
         }
 
-        const formattedData = Object.keys(timeSeries).reverse().map((date: string) => ({
-          value: parseFloat(timeSeries[date]['4. close']),
-          date: date
-        }));
-        setChartData(formattedData);
+        // Calculate price change and change percentage
+        if (timeSeries) {
+          const dates = Object.keys(timeSeries);
+          const firstDate = dates[dates.length - 1];
+          const lastDate = dates[0];
+          const firstClose = parseFloat(timeSeries[firstDate]['4. close']);
+          const lastClose = parseFloat(timeSeries[lastDate]['4. close']);
+          setPriceChange(lastClose - firstClose);
+          setChangePercentage(((lastClose - firstClose) / firstClose) * 100);
+        }
+
+        // Format chart data for display
+        if (timeSeries) {
+          let formattedData = Object.keys(timeSeries)
+            .reverse()
+            .map((date: string) => ({
+              value: parseFloat(timeSeries[date]['4. close']),
+              date: date,
+            }));
+          setChartData(formattedData);
+
+          // Calculate the maximum value dynamically
+          const maxVal = Math.max(...formattedData.map(item => item.value));
+          setMaxChartValue(maxVal);
+        }
       }
     } catch (error) {
       console.error(`Error fetching ${interval} data for ${symbol}:`, error);
@@ -81,25 +101,47 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
     return (
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={() => setSelectedInterval('1D')}>
-          <Text style={[styles.buttonText, { color: selectedInterval === '1D' ? '#0000ff' : '#000' }]}>1D</Text>
+          <Text
+            style={[
+              styles.buttonText,
+              { color: selectedInterval === '1D' ? '#0abb92' : theme.colors.text },
+            ]}>
+            1D
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setSelectedInterval('1W')}>
-          <Text style={[styles.buttonText, { color: selectedInterval === '1W' ? '#0000ff' : '#000' }]}>1W</Text>
+          <Text
+            style={[
+              styles.buttonText,
+              { color: selectedInterval === '1W' ? '#0abb92' : theme.colors.text },
+            ]}>
+            1W
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setSelectedInterval('1M')}>
-          <Text style={[styles.buttonText, { color: selectedInterval === '1M' ? '#0000ff' : '#000' }]}>1M</Text>
+          <Text
+            style={[
+              styles.buttonText,
+              { color: selectedInterval === '1M' ? '#0abb92' : theme.colors.text },
+            ]}>
+            1M
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setSelectedInterval('1Y')}>
-          <Text style={[styles.buttonText, { color: selectedInterval === '1Y' ? '#0000ff' : '#000' }]}>1Y</Text>
+          <Text
+            style={[
+              styles.buttonText,
+              { color: selectedInterval === '1Y' ? '#0abb92' : theme.colors.text },
+            ]}>
+            1Y
+          </Text>
         </TouchableOpacity>
       </View>
     );
   };
 
   if (loading) {
-    return (
-      <ActivityIndicator size="large" color="#0000ff" />
-    );
+    return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
   if (!chartData.length) {
@@ -111,17 +153,28 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
     );
   }
 
+  // Determine color for price change text
+  const priceChangeColor =
+    priceChange !== null && priceChange >= 0 ? '#0abb92' : '#d55438';
+
   return (
     <View>
-      {renderIntervalButtons()}
-      <View style={styles.chartContainer}>
+      <View style={styles.priceContainer}>
+        <Text style={[styles.price, { color: theme.colors.text }]}>${currentPrice}</Text>
+        {priceChange !== null && changePercentage !== null && (
+          <Text style={[styles.change, { color: priceChangeColor }]}>
+            ${priceChange.toFixed(2)} ({changePercentage.toFixed(2)}%)
+          </Text>
+        )}
+      </View>
+      <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Stock Chart</Text>
 
-      <LineChart
-          
+      <View style={styles.chartContainer}>
+        <LineChart
+          xAxisLabelTexts={chartData.map(item => getFormattedDate(item.date, selectedInterval))}
+          xAxisLabelTextStyle={{ color: theme.colors.text, fontSize: 10 }}
+          areaChart
           data={chartData}
-          rotateLabel
-          width={300}
-          hideDataPoints
           spacing={44}
           initialSpacing={0}
           color="#00ff83"
@@ -131,15 +184,17 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
           startOpacity={0.9}
           endOpacity={0.2}
           noOfSections={6}
-          maxValue={200}
+          maxValue={maxChartValue}
           yAxisExtraHeight={30}
           yAxisColor="white"
           yAxisThickness={0}
           rulesType="solid"
           rulesColor="gray"
-          yAxisTextStyle={{color: 'gray'}}
-          // yAxisSide='right'
-          xAxisColor="lightgray"
+          yAxisTextStyle={{ color: 'gray' }}
+          xAxisColor="#0abb92"
+          dataPointsColor={theme.colors.text}
+          scrollToEnd
+          showXAxisIndices
           pointerConfig={{
             pointerStripHeight: 160,
             pointerStripColor: 'lightgray',
@@ -151,8 +206,8 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
             activatePointersOnLongPress: true,
             autoAdjustPointerLabelPosition: false,
             pointerLabelComponent: (items: {
-              date: ReactNode; value: string; 
-}[]) => {
+              date: ReactNode; value: string;
+            }[]) => {
               return (
                 <View
                   style={{
@@ -160,14 +215,14 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
                     width: 100,
                     justifyContent: 'center',
                     marginTop: -30,
-                    marginLeft: -40,
+                    marginLeft: -80,
                   }}>
-                  <Text style={{color: 'black', fontSize: 14, marginBottom:6,textAlign:'center'}}>
+                  <Text style={{ color: theme.colors.text, fontSize: 14, marginBottom: 6, textAlign: 'center' }}>
                     {items[0].date}
                   </Text>
-  
-                  <View style={{paddingHorizontal:14,paddingVertical:6, borderRadius:16, backgroundColor:'white'}}>
-                    <Text style={{fontWeight: 'bold',textAlign:'center'}}>
+
+                  <View style={{ paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: 'white' }}>
+                    <Text style={{ fontWeight: 'bold', textAlign: 'center' }}>
                       {'$' + items[0].value + '.0'}
                     </Text>
                   </View>
@@ -175,24 +230,61 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
               );
             },
           }}
-        /></View>
+        />
+        {renderIntervalButtons()}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-    buttonContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      marginBottom: 20,
-    },
-    buttonText: {
-      fontSize: 16,
-    },
-    chartContainer: {
-      marginTop: 20,
-      paddingHorizontal: 10,
-    },
-  });
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  price: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginRight: 10,
+  },
+  change: {
+    fontSize: 18,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  buttonText: {
+    fontSize: 16,
+  },
+  chartContainer: {
+  },
+  infoContainer: {
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  infoText: {
+    fontSize: 16,
+    color: 'black',
+  },
+});
+
+const getFormattedDate = (dateString: string, interval: string): string => {
+  const date = new Date(dateString);
+  if (interval === '1D') {
+    return `${date.getHours()}:${('0' + date.getMinutes()).slice(-2)}`;
+  } else {
+    const day = ('0' + date.getDate()).slice(-2);
+    const month = ('0' + (date.getMonth() + 1)).slice(-2);
+    return `${day}/${month}`;
+  }
+};
 
 export default StockChart;

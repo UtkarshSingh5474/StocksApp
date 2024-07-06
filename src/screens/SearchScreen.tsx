@@ -1,24 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+} from 'react-native';
 import BackArrow from '../assets/back-arrow.svg';
 import SearchItem from '../components/SearchItem'; // Import your custom ListItem component
 import { useTheme } from '../theme/ThemeProvider';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchTickerSearch } from '../api/stockAPI';
+
+const debounce = (func: Function, delay: number) => {
+  let timeoutId: NodeJS.Timeout;
+  return (...args: any[]) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+};
 
 const SearchScreen = () => {
   const navigation = useNavigation<any>();
   const [selectedChip, setSelectedChip] = useState('All');
   const [recentlyVisitedStocks, setRecentlyVisitedStocks] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [query, setQuery] = useState('');
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const fetchRecentlyVisitedStocks = async () => {
       try {
-        const stocksString = await AsyncStorage.getItem('@recentlyVisitedStocks');
+        const stocksString = await AsyncStorage.getItem(
+          '@recentlyVisitedStocks',
+        );
         if (stocksString) {
           const stocks = JSON.parse(stocksString);
-          setRecentlyVisitedStocks(stocks);
+          console.log('Recently visited stocks:', stocks);
+          setRecentlyVisitedStocks(stocks.slice(0, 5));
+          if (query === '') {
+            setSearchResults(stocks.slice(0, 5));
+          }
         }
       } catch (error) {
         console.error('Error fetching recently visited stocks:', error);
@@ -26,9 +54,9 @@ const SearchScreen = () => {
     };
 
     fetchRecentlyVisitedStocks();
-  }, []);
+  }, [query]); // Only depend on query if necessary
 
-  const handleChipPress = (chip: React.SetStateAction<string>) => {
+  const handleChipPress = (chip: string) => {
     setSelectedChip(chip);
     // Handle any further actions based on selected chip
   };
@@ -37,17 +65,53 @@ const SearchScreen = () => {
     navigation.goBack();
   };
 
+  const handleSearch = useCallback(
+    async (keyword: string) => {
+      setQuery(keyword);
+      if (keyword === '') {
+        console.log('Search query is empty. Displaying recently visited stocks.');
+        setSearchResults(recentlyVisitedStocks);
+        return;
+      }
+      try {
+        const response = await fetchTickerSearch(keyword);
+        if (response.bestMatches) {
+          const results = response.bestMatches.map((match: any) => ({
+            symbol: match['1. symbol'],
+            name: match['2. name'],
+            assetType: match['3. type'],
+          }));
+          setSearchResults(results);
+        } else {
+          
+        }
+      } catch (error) {
+      }
+    },
+    [recentlyVisitedStocks]
+  );
+  
+  
+
+  const debouncedHandleSearch = useCallback(debounce(handleSearch, 300), []);
+
+  useEffect(() => {
+    debouncedHandleSearch(query);
+  }, [query, debouncedHandleSearch]);
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity style={styles.backButton} onPress={() => handleBackPress()}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
             <BackArrow width={30} height={30} fill={theme.colors.text} />
           </TouchableOpacity>
           <TextInput
             style={[styles.searchInput, { color: theme.colors.text }]}
             placeholder="Search..."
             placeholderTextColor={theme.colors.text}
+            value={query}
+            onChangeText={setQuery}
           />
         </View>
         <View style={styles.chipGroup}>
@@ -55,54 +119,39 @@ const SearchScreen = () => {
             style={[styles.chip, selectedChip === 'All' && styles.chipSelected]}
             onPress={() => handleChipPress('All')}
             activeOpacity={0.7}>
-            <Text
-              style={[
-                { color: theme.colors.text },
-                styles.chipText,
-                selectedChip === 'All' && styles.chipTextSelected,
-              ]}>
+            <Text style={[styles.chipText, selectedChip === 'All' && styles.chipTextSelected,{color:theme.colors.text}]}>
               All
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.chip,
-              selectedChip === 'Stocks' && styles.chipSelected,
-            ]}
+            style={[styles.chip, selectedChip === 'Stocks' && styles.chipSelected]}
             onPress={() => handleChipPress('Stocks')}
             activeOpacity={0.7}>
-            <Text
-              style={[
-                { color: theme.colors.text },
-                styles.chipText,
-                selectedChip === 'Stocks' && styles.chipTextSelected,
-              ]}>
+            <Text style={[styles.chipText, selectedChip === 'Stocks' && styles.chipTextSelected,{color:theme.colors.text}]}>
               Stocks
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.chip,
-              selectedChip === 'ETFs' && styles.chipSelected,
-            ]}
+            style={[styles.chip, selectedChip === 'ETFs' && styles.chipSelected]}
             onPress={() => handleChipPress('ETFs')}
             activeOpacity={0.7}>
-            <Text
-              style={[
-                { color: theme.colors.text },
-                styles.chipText,
-                selectedChip === 'ETFs' && styles.chipTextSelected,
-              ]}>
+            <Text style={[styles.chipText, selectedChip === 'ETFs' && styles.chipTextSelected,{color:theme.colors.text}]}>
               ETFs
             </Text>
           </TouchableOpacity>
         </View>
       </View>
       <FlatList
-        data={recentlyVisitedStocks}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <SearchItem item={item} />}
-      />
+  data={query === '' ? recentlyVisitedStocks : searchResults}
+  keyExtractor={(item) => item.symbol}
+  renderItem={({ item }) => (
+    <SearchItem
+      item={item}
+      isRecentlyVisited={recentlyVisitedStocks.some((stock) => stock.symbol === item.symbol)}
+    />
+  )}
+/>
+
     </View>
   );
 };
@@ -121,9 +170,6 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginRight: 10,
-  },
-  backButtonText: {
-    fontSize: 16,
   },
   searchInput: {
     flex: 1,
@@ -144,7 +190,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 26,
-    marginRight: 10, // Add space between chips
+    marginRight: 10,
   },
   chipSelected: {
     borderColor: '#0abb92',
@@ -156,7 +202,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   chipTextSelected: {
-    color: '#fff', // Example of selected chip text color
+    color: '#fff',
   },
 });
 

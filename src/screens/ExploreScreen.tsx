@@ -10,11 +10,12 @@ import {
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import CardItem from '../components/CardItem';
-import {fetchTopGainersLosers} from '../api/stockAPI';
 import {useTheme} from '../theme/ThemeProvider';
 import SearchIcon from '../assets/search.svg';
 import AppLogo from '../assets/appLogo.svg';
 import SunSVG from '../assets/sun.svg';
+import MenuSVG from '../assets/menu.svg';
+import { clearCache, fetchWithCache } from '../api/dataService';
 
 interface StockItem {
   ticker: string;
@@ -35,7 +36,7 @@ const ExploreScreen = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const {top_gainers, top_losers} = await fetchTopGainersLosers();
+        const {top_gainers, top_losers} = await fetchWithCache("topGainersLosers");
         setTopGainers(top_gainers);
         setTopLosers(top_losers);
       } catch (error) {
@@ -65,6 +66,10 @@ const ExploreScreen = () => {
   const handleSearchIconPress = async () => {
     navigation.navigate('Search');
   };
+
+  const handleCacheClearPress = async () => {
+    clearCache();
+  }
 
   if (loading) {
     return (
@@ -102,6 +107,12 @@ const ExploreScreen = () => {
             style={styles.themeToggleButton}
             onPress={toggleTheme}>
             <SunSVG width={30} height={30} fill={theme.colors.themeColor} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.themeToggleButton}
+            onPress={handleCacheClearPress}>
+            <Text>Clear</Text>
           </TouchableOpacity>
         </View>
       </View>
