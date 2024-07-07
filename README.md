@@ -1,7 +1,10 @@
 # React Native Stocks App
 
 > [!NOTE]
-> This is a note.
+>You can switch between the demo key (provided by AlphaVantage) which has limited endpoints with limited keywords but no limits OR you can use your own API key. In Demo Mode, only IBM stock data is shown and searches for 'tesco', 'SAIC' works.
+
+> [!IMPORTANT]
+> Swtich the modes from Explore Screen's top right menu > change api key. 
 
 This is a React Native application for tracking stocks, ETFs, and mutual funds. It includes features like exploring top gainers and losers, searching for stocks, and displaying detailed product screens with charts and company metrics.
 
