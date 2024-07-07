@@ -25,9 +25,10 @@ const CardItem: React.FC<CardItemProps> = ({ data }) => {
 
   const fetchLogo = async () => {
     try {
-      const response = await fetch(`https://financialmodelingprep.com/image-stock/${ticker}.png`);
+      const cleanedSymbol = ticker.replace(/\+$/, '');
+      const response = await fetch(`https://financialmodelingprep.com/image-stock/${cleanedSymbol}.png`);
       if (response.ok) {
-        setLogoUrl(`https://financialmodelingprep.com/image-stock/${ticker}.png`);
+        setLogoUrl(`https://financialmodelingprep.com/image-stock/${cleanedSymbol}.png`);
       } else {
         setLogoUrl(null); 
       }

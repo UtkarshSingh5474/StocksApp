@@ -59,7 +59,7 @@ const ChangeApiScreen = () => {
       </TouchableOpacity>
       <Text style={[styles.title,{color:theme.colors.text}]}>Change API Key</Text>
       <Text style={[styles.subtitle,{color:theme.colors.text}]}>
-        You can switch between the demo key (provided by AlphaVantage) which has limited endpoints with limited keywords but no limits OR you can use your own API key. In Demo Mode, only IBM stock data is shown.
+        You can switch between the demo key (provided by AlphaVantage) which has limited endpoints with limited keywords but no limits OR you can use your own API key. In Demo Mode, only IBM stock data is shown and searches for 'tesco', 'SAIC' works.
       </Text>
 
       <View style={styles.toggleContainer}>
