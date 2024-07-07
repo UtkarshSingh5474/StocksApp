@@ -6,7 +6,7 @@ import {
   fetchDailyTimeSeries, 
   fetchMonthlyTimeSeries, 
   fetchIntradayTimeSeries 
-} from '../api/stockAPI';
+} from './stockAPI';
 
 const CACHE_EXPIRATION_TIME = 40 * 60 * 1000; // 40 minutes in milliseconds
 

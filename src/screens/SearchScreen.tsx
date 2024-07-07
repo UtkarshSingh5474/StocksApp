@@ -12,7 +12,7 @@ import SearchItem from '../components/SearchItem';
 import { useTheme } from '../theme/ThemeProvider';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchTickerSearch } from '../api/stockAPI';
+import { fetchTickerSearch } from '../services/stockAPI';
 
 const debounce = (func: Function, delay: number) => {
   let timeoutId: NodeJS.Timeout;

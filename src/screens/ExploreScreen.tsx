@@ -16,8 +16,8 @@ import SearchIcon from '../assets/search.svg';
 import AppLogo from '../assets/appLogo.svg';
 import SunSVG from '../assets/sun.svg';
 import MenuSVG from '../assets/menu.svg';
-import { clearCache, fetchWithCache } from '../api/dataService';
-import apiConstants from '../constants/API';
+import { clearCache, fetchWithCache } from '../services/dataService';
+import apiConstants from '../utils/API';
 import colors from '../constants/Colors';
 
 interface StockItem {
@@ -202,6 +202,7 @@ const ExploreScreen = () => {
               <CardItem data={item} />
             </TouchableOpacity>
           )}
+          showsVerticalScrollIndicator={false}
           keyExtractor={(item) => item.ticker}
           numColumns={2}
           columnWrapperStyle={styles.columnWrapper}
@@ -216,6 +217,7 @@ const ExploreScreen = () => {
               <CardItem data={item} />
             </TouchableOpacity>
           )}
+          showsVerticalScrollIndicator={false}
           keyExtractor={(item) => item.ticker}
           numColumns={2}
           columnWrapperStyle={styles.columnWrapper}

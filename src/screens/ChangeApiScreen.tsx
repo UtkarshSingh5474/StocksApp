@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, TextInput, Switch, StyleSheet, TouchableOpacity } from 'react-native';
-import apiConstants from '../constants/API'; 
-import { clearCache } from '../api/dataService';
+import apiConstants from '../utils/API'; 
+import { clearCache } from '../services/dataService';
 import { useTheme } from '../theme/ThemeProvider';
 import BackArrow from '../assets/back-arrow.svg';
 

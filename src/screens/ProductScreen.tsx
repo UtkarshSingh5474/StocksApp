@@ -5,7 +5,7 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import StockChart from '../components/StockChart';
 import { useTheme } from '../theme/ThemeProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchWithCache } from '../api/dataService';
+import { fetchWithCache } from '../services/dataService';
 import BackArrow from '../assets/back-arrow.svg';
 import colors from '../constants/Colors';
 

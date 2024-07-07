@@ -5,7 +5,7 @@ import RecentlyVisitedIcon from '../assets/history.svg';
 import TrendUpIcon from '../assets/trend-up.svg'; 
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import {useNavigation} from '@react-navigation/native';
-import apiConstants from '../constants/API';
+import apiConstants from '../utils/API';
 
 
 interface Props {

@@ -5,7 +5,6 @@
 // 1.Demo mode('demo' api key which has only certain example endpoints but with no limits) 
 // 2. Custom mode(You can enter your own api key) but it has limits.
 
-// constants/API.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const apiKey='0E0VEHI4EEQBGP0W';

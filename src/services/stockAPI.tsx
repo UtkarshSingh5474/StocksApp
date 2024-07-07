@@ -1,7 +1,7 @@
 import Config from "react-native-config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from 'react-native';
-import apiConstants from '../constants/API';
+import apiConstants from '../utils/API';
 
 const BASE_URL = 'https://www.alphavantage.co';
 

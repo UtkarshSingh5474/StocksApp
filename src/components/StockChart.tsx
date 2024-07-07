@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
-import { fetchWithCache } from '../api/dataService';
+import { fetchWithCache } from '../services/dataService';
 import { useTheme } from '../theme/ThemeProvider';
 import colors from '../constants/Colors';
 
