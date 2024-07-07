@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, TextInput, Switch, StyleSheet, TouchableOpacity } from 'react-native';
-import apiConstants from '../constants/API'; // Adjust the path as per your project structure
+import apiConstants from '../constants/API'; 
 import { clearCache } from '../api/dataService';
+import { useTheme } from '../theme/ThemeProvider';
 
 const ChangeApiScreen = () => {
+  const { theme } = useTheme();
   const navigation = useNavigation<any>();
-  const [useCustomKey, setUseCustomKey] = useState(false);
-  const [customApiKey, setCustomApiKey] = useState('0E0VEHI4EEQBGP0W'); // Set default value
+  const [useCustomKey, setUseCustomKey] = useState(true);
+  const [customApiKey, setCustomApiKey] = useState(apiConstants.apiKey); 
 
   useEffect(() => {
     const fetchApiKey = async () => {
       const apiKey = await apiConstants.getApiKey();
       if (apiKey !== 'demo' && apiKey !== null) {
-        setUseCustomKey(true); // Set useCustomKey to true if apiKey is not 'demo' and not null
+        setUseCustomKey(true); 
         setCustomApiKey(apiKey);
       } else {
-        setUseCustomKey(false); // Set useCustomKey to false if apiKey is 'demo' or null
-        setCustomApiKey('0E0VEHI4EEQBGP0W'); // Set default value
+        setUseCustomKey(false);
+        setCustomApiKey('0E0VEHI4EEQBGP0W');
       }
     };
 
@@ -27,7 +29,7 @@ const ChangeApiScreen = () => {
   const handleToggleSwitch = () => {
     setUseCustomKey(!useCustomKey);
     if (!useCustomKey) {
-      setCustomApiKey('0E0VEHI4EEQBGP0W'); // Reset to default value when toggling on
+      setCustomApiKey('0E0VEHI4EEQBGP0W'); 
     }
   };
 
@@ -38,19 +40,19 @@ const ChangeApiScreen = () => {
       await apiConstants.resetToDemoApiKey();
     }
     console.log('Submitted API Key:', useCustomKey ? customApiKey : 'demo');
-    clearCache(); 
+    await clearCache(); 
     navigation.goBack();
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Change API Key</Text>
-      <Text style={styles.subtitle}>
+    <View style={[styles.container,{backgroundColor:theme.colors.background}]}>
+      <Text style={[styles.title,{color:theme.colors.text}]}>Change API Key</Text>
+      <Text style={[styles.subtitle,{color:theme.colors.text}]}>
         You can switch between the demo key (provided by AlphaVantage) which has limited endpoints with limited keywords but no limits OR you can use your own API key.
       </Text>
 
       <View style={styles.toggleContainer}>
-        <Text style={styles.toggleLabel}>Use Custom API Key:</Text>
+        <Text style={[styles.toggleLabel,{color:theme.colors.text}]}>Use Custom API Key:</Text>
         <Switch
           value={useCustomKey}
           onValueChange={handleToggleSwitch}
@@ -61,7 +63,7 @@ const ChangeApiScreen = () => {
       {useCustomKey && (
         <View style={styles.inputContainer}>
           <TextInput
-            style={styles.input}
+            style={[styles.input,{color:theme.colors.text}]}
             placeholder="Enter Custom API Key"
             value={customApiKey}
             onChangeText={text => setCustomApiKey(text)}

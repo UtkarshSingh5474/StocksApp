@@ -1,8 +1,9 @@
 import React, { ReactNode, useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 import { fetchWithCache } from '../api/dataService';
 import { useTheme } from '../theme/ThemeProvider';
+import colors from '../constants/Colors';
 
 type StockChartProps = {
   symbol: string;
@@ -16,8 +17,7 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [priceChange, setPriceChange] = useState<number | null>(null);
   const [changePercentage, setChangePercentage] = useState<number | null>(null);
-  const [maxChartValue, setMaxChartValue] = useState<number>(200); // Initial max value, can be adjusted as needed
-
+  const [maxChartValue, setMaxChartValue] = useState<number>(200); 
   useEffect(() => {
     fetchChartData(selectedInterval);
   }, [symbol, selectedInterval]);
@@ -57,14 +57,12 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
           data['Time Series (Daily)'] ||
           data['Monthly Adjusted Time Series'];
 
-        // Derive current price for other intervals
         if (interval !== '1D') {
           const dates = Object.keys(timeSeries);
           const latestDate = dates[0];
           setCurrentPrice(parseFloat(timeSeries[latestDate]['4. close']));
         }
 
-        // Calculate price change and change percentage
         if (timeSeries) {
           const dates = Object.keys(timeSeries);
           const firstDate = dates[dates.length - 1];
@@ -75,7 +73,6 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
           setChangePercentage(((lastClose - firstClose) / firstClose) * 100);
         }
 
-        // Format chart data for display
         if (timeSeries) {
           let formattedData = Object.keys(timeSeries)
             .reverse()
@@ -85,10 +82,12 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
             }));
           setChartData(formattedData);
 
-          // Calculate the maximum value dynamically
+          // max value
           const maxVal = Math.max(...formattedData.map(item => item.value));
           setMaxChartValue(maxVal);
         }
+      }else{
+        setChartData([]);
       }
     } catch (error) {
       console.error(`Error fetching ${interval} data for ${symbol}:`, error);
@@ -97,6 +96,11 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
     }
   };
 
+  function getWidth(): number | undefined {
+    const windowWidth = Dimensions.get('window').width;
+    const chartContainerWidth = windowWidth - 100;
+    return chartContainerWidth;
+  }
   const renderIntervalButtons = () => {
     return (
       <View style={styles.buttonContainer}>
@@ -141,19 +145,19 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
   };
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return <ActivityIndicator size="large" color={colors.green} />;
   }
 
   if (!chartData.length) {
     return (
       <View>
+        <Text style={{color:theme.colors.text}}>No data available for {symbol}</Text>
         {renderIntervalButtons()}
-        <Text>No data available for {symbol}</Text>
+
       </View>
     );
   }
 
-  // Determine color for price change text
   const priceChangeColor =
     priceChange !== null && priceChange >= 0 ? '#0abb92' : '#d55438';
 
@@ -192,9 +196,13 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
           rulesColor="gray"
           yAxisTextStyle={{ color: 'gray' }}
           xAxisColor="#0abb92"
+          xAxisLength={getWidth()}
+          rulesLength={getWidth()}
           dataPointsColor={theme.colors.text}
           scrollToEnd
           showXAxisIndices
+          
+          adjustToWidth
           pointerConfig={{
             pointerStripHeight: 160,
             pointerStripColor: 'lightgray',

@@ -8,7 +8,7 @@ import {
   FlatList,
 } from 'react-native';
 import BackArrow from '../assets/back-arrow.svg';
-import SearchItem from '../components/SearchItem'; // Import your custom ListItem component
+import SearchItem from '../components/SearchItem'; 
 import { useTheme } from '../theme/ThemeProvider';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -46,7 +46,7 @@ const SearchScreen = () => {
           console.log('Recently visited stocks:', stocks);
           setRecentlyVisitedStocks(stocks.slice(0, 5));
           setOriginalSearchData(stocks.slice(0, 5));
-          setFilteredList(stocks.slice(0, 5)); // Initialize filtered list with recently visited stocks
+          setFilteredList(stocks.slice(0, 5)); 
         } else {
           setRecentlyVisitedStocks([]);
           setOriginalSearchData([]);
@@ -58,15 +58,13 @@ const SearchScreen = () => {
     };
 
     fetchRecentlyVisitedStocks();
-  }, []); // Fetch once during component mount
+  }, []);
 
   useEffect(() => {
-    // Update filteredList when originalSearchData or selectedChip changes
     const filterData = () => {
       let filteredData = [...originalSearchData];
       switch (selectedChip) {
         case 'All':
-          // No filtering needed for 'All' chip
           break;
         case 'Stocks':
           filteredData = filteredData.filter(
@@ -94,7 +92,6 @@ const SearchScreen = () => {
 
   const handleChipPress = (chip: string) => {
     setSelectedChip(chip);
-    // Handle any further actions based on selected chip
   };
 
   const handleBackPress = () => {
@@ -106,8 +103,6 @@ const SearchScreen = () => {
       setQuery(keyword);
       if (keyword === '') {
         console.log('Search query is empty. Displaying recently visited stocks.');
-        // setFilteredList(recentlyVisitedStocks);
-        // setOriginalSearchData(recentlyVisitedStocks);
         return;
       }
       try {
@@ -121,12 +116,10 @@ const SearchScreen = () => {
           setOriginalSearchData(results);
           setFilteredList(results);
         } else {
-          // Handle no results scenario
           setOriginalSearchData([]);
           setFilteredList([]);
         }
       } catch (error) {
-        // Handle error scenario
         console.error('Error searching:', error);
       }
     },

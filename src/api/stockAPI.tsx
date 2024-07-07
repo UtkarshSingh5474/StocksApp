@@ -8,10 +8,10 @@ const BASE_URL = 'https://www.alphavantage.co';
 const getApiKey = async () => {
   const apiKey = await AsyncStorage.getItem('apiKey');
   if (!apiKey) {
-    apiConstants.setApiKey("demo");
+    apiConstants.setApiKey(apiConstants.apiKey);
   }
   console.log('apiKey:', apiKey);
-  return apiKey ? apiKey : "demo"; // Use the environment variable if no key is stored
+  return apiKey ? apiKey : apiConstants.apiKey; 
 };
 
 const endpoints = {
@@ -31,18 +31,24 @@ const handleRateLimitReached = (data: any) => {
       [{ text: 'OK', onPress: () => console.log('OK Pressed') }]
     );
     return true;
+  }else if(data.Information && data.Information.includes("premium endpoint")){
+    Alert.alert(
+      'Premium Endpoint',
+      'Please change your API key from Explore menu',
+      [{ text: 'OK', onPress: () => console.log('OK Pressed') }]
+    );
+    return true;
   }
   return false;
 };
 
-// Fetch function with rate limit handling
 const fetchTopGainersLosers = async () => {
   try {
     const response = await fetch(await endpoints.topGainersLosers());
     const data = await response.json();
 
     if (handleRateLimitReached(data)) {
-      return null; // or handle accordingly, e.g., return an empty array or object
+      return null; 
     }
 
     return data;
@@ -58,7 +64,7 @@ const fetchCompanyOverview = async (symbol: string) => {
     const data = await response.json();
 
     if (handleRateLimitReached(data)) {
-      return null; // or handle accordingly
+      return null; 
     }
 
     return data;
@@ -74,7 +80,7 @@ const fetchTickerSearch = async (keywords: string) => {
     const data = await response.json();
 
     if (handleRateLimitReached(data)) {
-      return null; // or handle accordingly
+      return null; 
     }
 
     return data;
@@ -90,7 +96,7 @@ const fetchDailyTimeSeries = async (symbol: string) => {
     const data = await response.json();
 
     if (handleRateLimitReached(data)) {
-      return null; // or handle accordingly
+      return null; 
     }
 
     return data;
@@ -106,7 +112,7 @@ const fetchMonthlyTimeSeries = async (symbol: string) => {
     const data = await response.json();
 
     if (handleRateLimitReached(data)) {
-      return null; // or handle accordingly
+      return null; 
     }
 
     return data;
@@ -122,7 +128,7 @@ const fetchIntradayTimeSeries = async (symbol: string, interval: string = '5min'
     const data = await response.json();
 
     if (handleRateLimitReached(data)) {
-      return null; // or handle accordingly
+      return null; 
     }
 
     return data;

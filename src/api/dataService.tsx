@@ -64,7 +64,7 @@ const fetchApiData = async (endpoint: string, params?: any) => {
       throw new Error(`Unsupported endpoint: ${endpoint}`);
   }
 
-  // Save the data to AsyncStorage with a timestamp
+  //Saving data to cache
   const cacheKey = generateCacheKey(endpoint, params);
   const cacheData = {
     data,
@@ -72,7 +72,6 @@ const fetchApiData = async (endpoint: string, params?: any) => {
   };
   if(data===null) return data;
   await AsyncStorage.setItem(cacheKey, JSON.stringify(cacheData));
-
   return data;
 };
 

@@ -8,9 +8,8 @@ import {
   StyleSheet,
   Modal,
   Alert,
-  Dimensions, // Import Dimensions
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native'; 
 import CardItem from '../components/CardItem';
 import { useTheme } from '../theme/ThemeProvider';
 import SearchIcon from '../assets/search.svg';
@@ -19,6 +18,7 @@ import SunSVG from '../assets/sun.svg';
 import MenuSVG from '../assets/menu.svg';
 import { clearCache, fetchWithCache } from '../api/dataService';
 import apiConstants from '../constants/API';
+import colors from '../constants/Colors';
 
 interface StockItem {
   ticker: string;
@@ -30,6 +30,7 @@ interface StockItem {
 
 const ExploreScreen = () => {
   const navigation = useNavigation<any>();
+  const isFocused = useIsFocused(); // Hook to determine if the screen is focused
   const [topGainers, setTopGainers] = useState<StockItem[]>([]);
   const [topLosers, setTopLosers] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,22 +39,28 @@ const ExploreScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { top_gainers, top_losers } = await fetchWithCache("topGainersLosers");
-        setTopGainers(top_gainers);
-        setTopLosers(top_losers);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      const { top_gainers, top_losers } = await fetchWithCache("topGainersLosers");
+      setTopGainers(top_gainers);
+      setTopLosers(top_losers);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
+  useEffect(() => {
+    fetchData(); 
   }, []);
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused]);
 
   const handleCardPress = async (ticker: string) => {
     const currentApiKey = await apiConstants.getApiKey();
@@ -105,9 +112,41 @@ const ExploreScreen = () => {
 
   if (loading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+
+      {/* Header */}
+      <View style={styles.header}>
+        {/* App Logo and Name */}
+        <View style={styles.appLogoContainer}>
+          <AppLogo style={styles.appLogo} />
+          <Text style={[styles.appName, { color: theme.colors.text }]}>
+            Stocks App
+          </Text>
+        </View>
+
+        <View style={styles.iconsContainer}>
+          <TouchableOpacity
+            style={styles.themeToggleButton}
+            onPress={handleSearchIconPress}>
+            <SearchIcon width={30} height={30} fill={theme.colors.text} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.themeToggleButton}
+            onPress={toggleTheme}>
+            <SunSVG width={30} height={30} fill={theme.colors.themeColor} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.themeToggleButton}
+            onPress={toggleModal}>
+            <MenuSVG width={30} height={30} fill={theme.colors.text} />
+          </TouchableOpacity>
+        </View>
       </View>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={colors.green} />
+      </View></View>
     );
   }
 
@@ -215,21 +254,21 @@ const ExploreScreen = () => {
         transparent={true}
         visible={isModalVisible}
         onRequestClose={toggleModal}>
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer,{backgroundColor:theme.colors.background}]}>
           <TouchableOpacity
             style={styles.modalOption}
             onPress={() => handleModalOptionPress('Clear API Cache')}>
-            <Text style={styles.modalOptionText}>Clear API Cache</Text>
+            <Text style={[styles.modalOptionText,{color:theme.colors.text}]}>Clear API Cache</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.modalOption}
             onPress={() => handleModalOptionPress('API KEY')}>
-            <Text style={styles.modalOptionText}>API KEY</Text>
+            <Text style={[styles.modalOptionText,{color:theme.colors.text}]}>API KEY</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.modalOption}
             onPress={toggleModal}>
-            <Text style={styles.modalOptionText}>Cancel</Text>
+            <Text style={[styles.modalOptionText,{color:theme.colors.text}]}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </Modal>
@@ -258,14 +297,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   appLogo: {
-    width: 40, // Adjust size as needed
-    height: 40, // Adjust size as needed
+    width: 40, 
+    height: 40, 
   },
   appName: {
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
-    color: '#333', // Adjust color as needed
+    color: '#333', 
   },
   themeToggleButton: {
     padding: 10,
@@ -282,13 +321,13 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     flexDirection: 'row',
     position: 'absolute',
-    bottom: 10, // Adjust position as needed
-    left: 10, // Adjust position as needed
-    right: 10, // Adjust position as needed
+    bottom: 10,
+    left: 10,
+    right: 10, 
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
-    backgroundColor: 'white', // Adjust background color as needed
+    backgroundColor: 'white', 
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -315,7 +354,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   grid: {
-    paddingBottom: 80, // Adjusted to account for the height of the tab buttons
+    paddingBottom: 80,
   },
   columnWrapper: {
     justifyContent: 'space-between',

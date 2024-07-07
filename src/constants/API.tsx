@@ -8,6 +8,7 @@
 // constants/API.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const apiKey='0E0VEHI4EEQBGP0W';
 const STORAGE_KEY = 'apiKey';
 
 const getApiKey = async (): Promise<string | null> => {
@@ -39,4 +40,5 @@ export default {
   getApiKey,
   setApiKey,
   resetToDemoApiKey,
+  apiKey,
 };

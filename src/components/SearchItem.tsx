@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   assetType: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#0abb92', // Example color for asset type
+    color: '#0abb92', 
   },
 });
 

@@ -33,7 +33,7 @@ const CardItem: React.FC<CardItemProps> = ({ data }) => {
       }
     } catch (error) {
       console.error('Error fetching logo:', error);
-      setLogoUrl(null); // Reset logoUrl to show default image
+      setLogoUrl(null);
     }
   };
 
