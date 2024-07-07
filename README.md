@@ -23,19 +23,26 @@ This is a React Native application for tracking stocks, ETFs, and mutual funds. 
   - Explore company metrics and information.
 
 ## Screenshots
+- **Dark Theme**
+![Dark Theme](screenshots/darkMerged.png)
 
-![Explore Screen](screenshots/explore-screen.png)
-![Product Screen](screenshots/product-screen.png)
+- **Light Theme**
+![Light Theme](screenshots/lightMerged.png)
+
+
+https://github.com/UtkarshSingh5474/StocksApp/assets/50947619/fb78417a-5ce6-4586-9fd2-dbd29a7c7c49
+
+## Demo Video
+
+Watch a demo video showcasing the app's features:
+[Watch Demo Video](https://youtu.be/NbdVwFFFXMI)
 
 ## Installation
 
 To install the app, download the APK file from the following link:
 [Download APK](link-to-your-apk-file)
 
-## Demo Video
 
-Watch a demo video showcasing the app's features:
-[Watch Demo Video](link-to-your-demo-video)
 
 ## Getting Started
 
