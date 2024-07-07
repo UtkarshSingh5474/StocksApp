@@ -24,6 +24,7 @@ const ProductScreen: React.FC<Props> = ({ route }) => {
   const { theme } = useTheme();
   const [companyInfo, setCompanyInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     fetchCompanyData(symbol);
@@ -72,32 +73,54 @@ const ProductScreen: React.FC<Props> = ({ route }) => {
       console.error('Error saving to AsyncStorage:', error);
     }
   };
+
   const handleBackPress = () => {
     navigation.goBack();
   };
 
+  const renderImage = () => {
+    if (imageError) {
+      return (
+        <View style={[styles.logoCard, { backgroundColor: theme.colors.imageBackground }]}>
+          <Text style={styles.symbolText}>{symbol.slice(0, 4)}</Text>
+        </View>
+      );
+    } else {
+      return (
+        <View style={[styles.logoCard, { backgroundColor: theme.colors.imageBackground }]}>
+          <Image
+            source={{ uri: `https://financialmodelingprep.com/image-stock/${symbol}.png` }}
+            style={styles.logo}
+            resizeMode="contain"
+            onError={() => setImageError(true)}
+          />
+        </View>
+      );
+    }
+  };
+
   if (loading) {
     return (
-        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <BackArrow width={24} height={24} fill={theme.colors.text} />
         </TouchableOpacity>
-        <BackArrow width={24} height={24} fill={theme.colors.text} />
         <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
-        <ActivityIndicator size="large" color={colors.green} />
-      </View></View>
+          <ActivityIndicator size="large" color={colors.green} />
+        </View>
+      </View>
     );
   }
-  
 
   if (!companyInfo) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-        <BackArrow width={24} height={24} fill={theme.colors.text} />
-      </TouchableOpacity>
-      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
-        <Text style={{ color: theme.colors.text }}>No data available. Try changing the api key Or Activate Demo mode from the Explore Screen's Menu</Text>
-      </View>
+          <BackArrow width={24} height={24} fill={theme.colors.text} />
+        </TouchableOpacity>
+        <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
+          <Text style={{ color: theme.colors.text }}>No data available. Try changing the API key or activate Demo mode from the Explore Screen's Menu.</Text>
+        </View>
       </View>
     );
   }
@@ -118,8 +141,6 @@ const ProductScreen: React.FC<Props> = ({ route }) => {
     Sector,
   } = companyInfo;
 
-
-
   const renderMetric = (label: string, value: any) => (
     <View style={styles.metricRow} key={label}>
       <Text style={[styles.metricLabel, { color: theme.colors.text }]}>{label}:</Text>
@@ -133,13 +154,7 @@ const ProductScreen: React.FC<Props> = ({ route }) => {
         <BackArrow width={24} height={24} fill={theme.colors.text} />
       </TouchableOpacity>
       <View style={styles.headerContainer}>
-        <View style={[styles.logoCard, { backgroundColor: theme.colors.imageBackground }]}>
-          <Image
-            source={{ uri: `https://financialmodelingprep.com/image-stock/${symbol}.png` }}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+        {renderImage()}
         <View style={styles.headerInfo}>
           <Text style={[styles.companyName, { color: theme.colors.text }]}>{Name ?? 'N/A'}</Text>
           <Text style={[styles.infoText, { color: theme.colors.text }]}>
@@ -200,18 +215,22 @@ const styles = StyleSheet.create({
     shadowColor: '#000000',
     shadowOpacity: 0.3,
     shadowRadius: 3,
-  },
-  logo: {
     width: 80,
     height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  headerInfo: {
-    marginLeft: 16,
-    flex: 1,
+  logo: {
+    width: '100%',
+    height: '100%',
   },
   companyName: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  headerInfo: {
+    marginLeft: 16,
+    flex: 1,
   },
   infoText: {
     fontSize: 14,
@@ -259,6 +278,12 @@ const styles = StyleSheet.create({
   },
   metricValue: {
     fontSize: 16,
+  },
+  symbolText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
+    textTransform: 'uppercase',
   },
 });
 

@@ -110,6 +110,11 @@ const ExploreScreen = () => {
     }
   };
 
+  const handleThemeTogglePress = () => {
+    fetchData();
+    toggleTheme();
+  }
+
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -133,7 +138,7 @@ const ExploreScreen = () => {
 
           <TouchableOpacity
             style={styles.themeToggleButton}
-            onPress={toggleTheme}>
+            onPress={handleThemeTogglePress}>
             <SunSVG width={30} height={30} fill={theme.colors.themeColor} />
           </TouchableOpacity>
 
@@ -153,7 +158,7 @@ const ExploreScreen = () => {
   const noDataMessage = (
     <View style={styles.noDataContainer}>
       <Text style={[styles.noDataText, { color: theme.colors.text }]}>
-        No data available. Try changing the API key Or Activate Demo mode from the Explore menu.
+        No data available. Try changing the API key Or Activate Demo mode from the Explore menu and Restart the app.
       </Text>
     </View>
   );
@@ -179,7 +184,7 @@ const ExploreScreen = () => {
 
           <TouchableOpacity
             style={styles.themeToggleButton}
-            onPress={toggleTheme}>
+            onPress={handleThemeTogglePress}>
             <SunSVG width={30} height={30} fill={theme.colors.themeColor} />
           </TouchableOpacity>
 

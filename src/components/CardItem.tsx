@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import FastImage from 'react-native-fast-image';
+import LinearGradient from 'react-native-linear-gradient';
 import { useTheme } from '../theme/ThemeProvider';
-import NoImageSVG from '../assets/no-image.svg';
 
 interface CardItemProps {
   data: {
@@ -29,7 +29,7 @@ const CardItem: React.FC<CardItemProps> = ({ data }) => {
       if (response.ok) {
         setLogoUrl(`https://financialmodelingprep.com/image-stock/${ticker}.png`);
       } else {
-        setLogoUrl(null); // Reset logoUrl to show default image
+        setLogoUrl(null); 
       }
     } catch (error) {
       console.error('Error fetching logo:', error);
@@ -38,6 +38,34 @@ const CardItem: React.FC<CardItemProps> = ({ data }) => {
   };
 
   const isPositiveChange = parseFloat(change_percentage) > 0;
+
+  const generateRandomGradient = () => {
+    const colors = [
+      '#FF6A00',
+      '#EE0979',
+      '#FFB7B2',
+      '#B2FEFA',
+      '#B39DDB',
+      '#7A5C61',
+      '#6A0572',
+      '#4B0082',
+    ]; 
+    const randomIndex = Math.floor(Math.random() * colors.length);
+    return [colors[randomIndex], colors[randomIndex]];
+  };
+
+  const PlaceholderView = (
+    <LinearGradient
+      colors={generateRandomGradient()}
+      style={styles.defaultLogoContainer}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <Text style={[styles.defaultLogoText, { color: theme.colors.text }]} numberOfLines={2} ellipsizeMode="tail">
+        {ticker.substring(0, 4).toUpperCase()}
+      </Text>
+    </LinearGradient>
+  );
 
   return (
     <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
@@ -48,9 +76,7 @@ const CardItem: React.FC<CardItemProps> = ({ data }) => {
           resizeMode={FastImage.resizeMode.cover}
         />
       ) : (
-        <View style={[styles.defaultLogoContainer, { backgroundColor: theme.colors.imageBackground }]}>
-          <NoImageSVG style={styles.defaultLogo} fill={theme.colors.text} />
-        </View>
+        PlaceholderView
       )}
       <Text style={[styles.title, { color: theme.colors.text }]}>{ticker}</Text>
       <Text style={[styles.subtitle, { color: theme.colors.text }]}>${price}</Text>
@@ -84,9 +110,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  defaultLogo: {
-    width: 40,
-    height: 40,
+  defaultLogoText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    flex: 1,
+    flexWrap: 'wrap',
   },
   title: {
     fontSize: 16,
