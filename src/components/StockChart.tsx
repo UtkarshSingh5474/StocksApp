@@ -24,12 +24,13 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
 
   const fetchChartData = async (interval: string) => {
     try {
+      const cleanedSymbol = symbol.replace(/\+$/, ''); 
       setLoading(true);
       let data: any;
       switch (interval) {
         case '1D':
           data = await fetchWithCache('intradayTimeSeries', {
-            symbol: symbol,
+            symbol: cleanedSymbol,
             interval: '5min',
           });
           if (data && data['Time Series (5min)']) {
@@ -42,10 +43,10 @@ const StockChart: React.FC<StockChartProps> = ({ symbol }) => {
           break;
         case '1W':
         case '1M':
-          data = await fetchWithCache('dailyTimeSeries', { symbol: symbol });
+          data = await fetchWithCache('dailyTimeSeries', { symbol: cleanedSymbol });
           break;
         case '1Y':
-          data = await fetchWithCache('monthlyTimeSeries', { symbol: symbol });
+          data = await fetchWithCache('monthlyTimeSeries', { symbol: cleanedSymbol });
           break;
         default:
           return;

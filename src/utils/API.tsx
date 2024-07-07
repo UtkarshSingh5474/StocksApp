@@ -7,7 +7,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const apiKey='0E0VEHI4EEQBGP0W';
+const apiKey='2Z60PPZFWUTTEQAD';
 const STORAGE_KEY = 'apiKey';
 
 const getApiKey = async (): Promise<string | null> => {

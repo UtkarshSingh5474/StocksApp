@@ -32,7 +32,8 @@ const ProductScreen: React.FC<Props> = ({ route }) => {
 
   const fetchCompanyData = async (symbol: string) => {
     try {
-      const data = await fetchWithCache('companyOverview', { symbol });
+      const cleanedSymbol = symbol.replace(/\+$/, ''); 
+      const data = await fetchWithCache('companyOverview', { symbol: cleanedSymbol });
       if (data?.AssetType === 'Common Stock') data.AssetType = 'Equity';
       setCompanyInfo(data);
     } catch (error) {
@@ -86,10 +87,11 @@ const ProductScreen: React.FC<Props> = ({ route }) => {
         </View>
       );
     } else {
+      const cleanedSymbol = symbol.replace(/\+$/, ''); 
       return (
         <View style={[styles.logoCard, { backgroundColor: theme.colors.imageBackground }]}>
           <Image
-            source={{ uri: `https://financialmodelingprep.com/image-stock/${symbol}.png` }}
+            source={{ uri: `https://financialmodelingprep.com/image-stock/${cleanedSymbol}.png` }}
             style={styles.logo}
             resizeMode="contain"
             onError={() => setImageError(true)}
