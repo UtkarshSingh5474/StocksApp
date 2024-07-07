@@ -40,7 +40,7 @@ Watch a demo video showcasing the app's features:
 ## Installation
 
 To install the app, download the APK file from the following link:
-[Download APK](link-to-your-apk-file)
+[Download APK](https://drive.google.com/file/d/1JsURN8MUzSMu1vpMOjNRNIfGoZth6Fh7/view?usp=sharing)
 
 
 
