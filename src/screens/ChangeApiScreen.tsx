@@ -4,6 +4,8 @@ import { View, Text, TextInput, Switch, StyleSheet, TouchableOpacity } from 'rea
 import apiConstants from '../constants/API'; 
 import { clearCache } from '../api/dataService';
 import { useTheme } from '../theme/ThemeProvider';
+import BackArrow from '../assets/back-arrow.svg';
+
 
 const ChangeApiScreen = () => {
   const { theme } = useTheme();
@@ -44,8 +46,17 @@ const ChangeApiScreen = () => {
     navigation.goBack();
   };
 
+  
+  const handleBackPress = () => {
+    navigation.goBack();
+  };
+
   return (
     <View style={[styles.container,{backgroundColor:theme.colors.background}]}>
+      
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+        <BackArrow width={24} height={24} fill={theme.colors.text} />
+      </TouchableOpacity>
       <Text style={[styles.title,{color:theme.colors.text}]}>Change API Key</Text>
       <Text style={[styles.subtitle,{color:theme.colors.text}]}>
         You can switch between the demo key (provided by AlphaVantage) which has limited endpoints with limited keywords but no limits OR you can use your own API key.
@@ -86,7 +97,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    justifyContent: 'center',
+  },
+
+  backButton: {
+    padding: 10,
   },
   title: {
     fontSize: 24,

@@ -37,7 +37,8 @@ const AppNavigator = () => {
 
           <Stack.Screen
           name="ChangeApiKey"
-          component={ChangeApiScreen} />
+          component={ChangeApiScreen} 
+          options={{headerShown:false}}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

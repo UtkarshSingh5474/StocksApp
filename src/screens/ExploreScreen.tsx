@@ -153,7 +153,7 @@ const ExploreScreen = () => {
   const noDataMessage = (
     <View style={styles.noDataContainer}>
       <Text style={[styles.noDataText, { color: theme.colors.text }]}>
-        No data available. Try changing the API key from the menu.
+        No data available. Try changing the API key Or Activate Demo mode from the Explore menu.
       </Text>
     </View>
   );

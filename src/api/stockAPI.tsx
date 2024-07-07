@@ -27,14 +27,14 @@ const handleRateLimitReached = (data: any) => {
   if (data.Information && data.Information.includes("API rate limit")) {
     Alert.alert(
       'API Limit Reached',
-      'Please change your API key from Explore menu',
+      'Please change your API key Or Activate Demo mode from Explore menu',
       [{ text: 'OK', onPress: () => console.log('OK Pressed') }]
     );
     return true;
   }else if(data.Information && data.Information.includes("premium endpoint")){
     Alert.alert(
       'Premium Endpoint',
-      'Please change your API key from Explore menu',
+      'Please change your API key Or Activate Demo mode from Explore menu',
       [{ text: 'OK', onPress: () => console.log('OK Pressed') }]
     );
     return true;

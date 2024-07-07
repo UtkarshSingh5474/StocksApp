@@ -96,7 +96,7 @@ const ProductScreen: React.FC<Props> = ({ route }) => {
         <BackArrow width={24} height={24} fill={theme.colors.text} />
       </TouchableOpacity>
       <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
-        <Text style={{ color: theme.colors.text }}>No data available. Try changing the api key from the Explore Screen's Menu</Text>
+        <Text style={{ color: theme.colors.text }}>No data available. Try changing the api key Or Activate Demo mode from the Explore Screen's Menu</Text>
       </View>
       </View>
     );
